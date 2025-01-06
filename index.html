@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Discord Webhook Messenger</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1 id="title">Discord Webhook Messenger</h1>
+        <select class="language-select" id="language-select">
+            <option value="en">English</option>
+            <option value="fa">فارسی</option>
+        </select>
+    </header>
+    <main>
+        <div class="container">
+            <div class="form-group">
+                <label for="webhook-url" id="webhook-label">Webhook URL</label>
+                <input type="text" id="webhook-url" placeholder="Enter Discord Webhook URL">
+            </div>
+            <div class="form-group">
+                <label for="message-content" id="message-label">Message Content</label>
+                <textarea id="message-content" placeholder="Enter your message here..."></textarea>
+            </div>
+            <div class="form-group">
+                <label for="message-count" id="count-label">Number of Messages</label>
+                <input type="number" id="message-count" min="1" value="1">
+            </div>
+            <button id="send-button">Send Messages</button>
+            <div class="terminal" id="terminal">
+                <p class="log" id="terminal-log"></p>
+            </div>
+        </div>
+    </main>
+    <script src="script.js"></script>
+</body>
+</html>
