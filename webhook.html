@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Discord Webhook Messenger</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #141e30, #243b55);
+            color: #ffffff;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        header {
+            background: rgba(20, 30, 48, 0.85);
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            z-index: 2;
+            animation: slideDown 0.8s ease-out forwards;
+        }
+
+        @keyframes slideDown {
+            from { transform: translateY(-100%); }
+            to { transform: translateY(0); }
+        }
+
+        header h1 {
+            font-size: 28px;
+            letter-spacing: 1.2px;
+            transition: color 0.3s;
+        }
+
+        .language-select {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 5px;
+            background: #ffffff20;
+            color: #ffffff;
+            font-size: 16px;
+            cursor: pointer;
+            backdrop-filter: blur(5px);
+            transition: background 0.3s, color 0.3s;
+        }
+
+        .language-select:hover {
+            background: #ffffff40;
+        }
+
+        main {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px 40px;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            width: 100%;
+            max-width: 600px;
+            animation: fadeIn 1s ease-in-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+            position: relative;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 18px;
+            font-weight: 500;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.15);
+            color: #ffffff;
+            font-size: 16px;
+            outline: none;
+            transition: background 0.3s, transform 0.2s;
+        }
+
+        input[type="text"]::placeholder,
+        input[type="number"]::placeholder,
+        textarea::placeholder {
+            color: #dddddd;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        textarea:focus {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+            max-height: 300px;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            background: #1db954;
+            color: #ffffff;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.2s, box-shadow 0.3s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+
+        button:hover {
+            background: #1ed760;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+
+        .terminal {
+            background: rgba(0, 0, 0, 0.85);
+            padding: 20px;
+            border-radius: 10px;
+            height: 250px;
+            overflow-y: auto;
+            font-family: 'Courier New', Courier, monospace;
+            margin-top: 30px;
+            position: relative;
+            animation: slideUp 0.8s ease-out forwards;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .log {
+            margin-bottom: 8px;
+            opacity: 0;
+            animation: fadeInLog 0.5s forwards;
+        }
+
+        @keyframes fadeInLog {
+            to { opacity: 1; }
+        }
+
+        .log.success {
+            color: #28a745;
+        }
+
+        .log.error {
+            color: #dc3545;
+        }
+
+        .terminal::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .terminal::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        .terminal::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+        }
+
+        @media (max-width: 768px) {
+            header {
+                padding: 15px 20px;
+            }
+
+            header h1 {
+                font-size: 24px;
+            }
+
+            .language-select {
+                font-size: 14px;
+                padding: 6px 10px;
+            }
+
+            .container {
+                padding: 25px 30px;
+            }
+
+            label {
+                font-size: 16px;
+            }
+
+            input[type="text"],
+            input[type="number"],
+            textarea {
+                font-size: 14px;
+                padding: 10px 14px;
+            }
+
+            button {
+                font-size: 16px;
+                padding: 12px;
+            }
+
+            .terminal {
+                height: 200px;
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1 id="title">Discord Webhook Messenger</h1>
+        <select class="language-select" id="language-select">
+            <option value="en">English</option>
+            <option value="fa">فارسی</option>
+        </select>
+    </header>
+    <main>
+        <div class="container">
+            <div class="form-group">
+                <label for="webhook-url" id="webhook-label">Webhook URL</label>
+                <input type="text" id="webhook-url" placeholder="Enter Discord Webhook URL">
+            </div>
+            <div class="form-group">
+                <label for="message-content" id="message-label">Message Content</label>
+                <textarea id="message-content" placeholder="Enter your message here..."></textarea>
+            </div>
+            <div class="form-group">
+                <label for="message-count" id="count-label">Number of Messages</label>
+                <input type="number" id="message-count" min="1" value="1">
+            </div>
+            <button id="send-button">Send Messages</button>
+            <div class="terminal" id="terminal">
+                <p class="log" id="terminal-log"></p>
+            </div>
+        </div>
+    </main>
+    <script>
+        const languageSelect = document.getElementById('language-select');
+        const title = document.getElementById('title');
+        const webhookLabel = document.getElementById('webhook-label');
+        const messageLabel = document.getElementById('message-label');
+        const countLabel = document.getElementById('count-label');
+        const sendButton = document.getElementById('send-button');
+        const terminalLog = document.getElementById('terminal-log');
+        const webhookInput = document.getElementById('webhook-url');
+        const countInput = document.getElementById('message-count');
+        const messageInput = document.getElementById('message-content');
+
+        const translations = {
+            en: {
+                title: "Discord Webhook Messenger",
+                webhookLabel: "Webhook URL",
+                webhookPlaceholder: "Enter Discord Webhook URL",
+                messageLabel: "Message Content",
+                messagePlaceholder: "Enter your message here...",
+                countLabel: "Number of Messages",
+                sendButton: "Send Messages",
+                terminalPlaceholder: "Logs will appear here..."
+            },
+            fa: {
+                title: "فرستنده وبهوک دیسکورد",
+                webhookLabel: "آدرس وبهوک",
+                webhookPlaceholder: "آدرس وبهوک دیسکورد را وارد کنید",
+                messageLabel: "محتوای پیام",
+                messagePlaceholder: "پیام خود را اینجا وارد کنید...",
+                countLabel: "تعداد پیام‌ها",
+                sendButton: "ارسال پیام‌ها",
+                terminalPlaceholder: "لاگ‌ها در اینجا نمایش داده می‌شوند..."
+            }
+        };
+
+        languageSelect.addEventListener('change', (e) => {
+            const lang = e.target.value;
+            title.textContent = translations[lang].title;
+            webhookLabel.textContent = translations[lang].webhookLabel;
+            webhookInput.placeholder = translations[lang].webhookPlaceholder;
+            messageLabel.textContent = translations[lang].messageLabel;
+            messageInput.placeholder = translations[lang].messagePlaceholder;
+            countLabel.textContent = translations[lang].countLabel;
+            sendButton.textContent = translations[lang].sendButton;
+            if (!terminalLog.innerHTML.trim()) {
+                terminalLog.innerHTML = `<span class="log">${translations[lang].terminalPlaceholder}</span>`;
+            }
+        });
+
+        function log(message, type = 'success') {
+            const p = document.createElement('p');
+            p.textContent = message;
+            p.classList.add('log');
+            if (type === 'success') {
+                p.classList.add('success');
+            } else {
+                p.classList.add('error');
+            }
+            terminalLog.appendChild(p);
+            terminalLog.scrollTop = terminalLog.scrollHeight;
+        }
+
+        async function sendWebhook(url, count, message) {
+            sendButton.disabled = true;
+            sendButton.textContent = languageSelect.value === 'fa' ? 'در حال ارسال...' : 'Sending...';
+            for (let i = 1; i <= count; i++) {
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ content: message })
+                    });
+                    if (response.ok) {
+                        log(languageSelect.value === 'fa' ? `✅ پیام ${i} با موفقیت ارسال شد.` : `✅ Message ${i} sent successfully.`);
+                    } else {
+                        log(languageSelect.value === 'fa' ? `❌ ارسال پیام ${i} ناموفق بود. وضعیت: ${response.status}` : `❌ Failed to send message ${i}. Status: ${response.status}`, 'error');
+                    }
+                } catch (error) {
+                    log(languageSelect.value === 'fa' ? `❌ خطا در ارسال پیام ${i}: ${error}` : `❌ Error sending message ${i}: ${error}`, 'error');
+                }
+                await new Promise(resolve => setTimeout(resolve, 1));
+            }
+            sendButton.disabled = false;
+            sendButton.textContent = languageSelect.value === 'fa' ? 'ارسال پیام‌ها' : 'Send Messages';
+        }
+
+        sendButton.addEventListener('click', () => {
+            const url = webhookInput.value.trim();
+            const count = parseInt(countInput.value);
+            const message = messageInput.value.trim();
+            const lang = languageSelect.value;
+
+            if (!url) {
+                log(lang === 'fa' ? '❌ لطفاً آدرس وبهوک را وارد کنید.' : '❌ Please enter the webhook URL.', 'error');
+                return;
+            }
+            if (!message) {
+                log(lang === 'fa' ? '❌ لطفاً محتوای پیام را وارد کنید.' : '❌ Please enter the message content.', 'error');
+                return;
+            }
+            if (isNaN(count) || count < 1) {
+                log(lang === 'fa' ? '❌ لطفاً تعداد معتبری وارد کنید.' : '❌ Please enter a valid number of messages.', 'error');
+                return;
+            }
+            sendWebhook(url, count, message);
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const lang = languageSelect.value;
+            if (!terminalLog.innerHTML.trim()) {
+                terminalLog.innerHTML = `<span class="log">${translations[lang].terminalPlaceholder}</span>`;
+            }
+        });
+    </script>
+</body>
+</html>
